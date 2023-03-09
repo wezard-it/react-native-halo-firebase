@@ -2487,11 +2487,12 @@
     "@typescript-eslint/types" "5.54.1"
     eslint-visitor-keys "^3.3.0"
 
-"@wezard/halo-core@file:../react-native-halo-core":
+"@wezard/halo-core@file:./../halo-core":
   version "0.1.0"
 
-"@wezard/halo-core@file:./../react-native-halo-core":
+"@wezard/halo-core@https://github.com/wezard-it/halo-core.git":
   version "0.1.0"
+  resolved "https://github.com/wezard-it/halo-core.git#c1323f473890f01d0cedc955b6720b3d1c34be51"
 
 "@xmldom/xmldom@~0.7.0":
   version "0.7.9"

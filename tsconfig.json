@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "react-native-halo-firebase": ["./src/index"]
+      "@wezard/react-native-halo-firebase": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
