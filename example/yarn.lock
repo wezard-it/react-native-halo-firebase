@@ -1534,8 +1534,9 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@wezard/halo-core@file:../../halo-core":
+"@wezard/halo-core@https://github.com/wezard-it/halo-core.git":
   version "0.1.0"
+  resolved "https://github.com/wezard-it/halo-core.git#36fd06f435b15cb53ca96971d8fc82df18ee7f55"
 
 "@xmldom/xmldom@~0.7.0":
   version "0.7.9"
