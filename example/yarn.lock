@@ -1535,8 +1535,8 @@
     "@types/yargs-parser" "*"
 
 "@wezard/halo-core@https://github.com/wezard-it/halo-core.git":
-  version "0.1.0"
-  resolved "https://github.com/wezard-it/halo-core.git#77aab2af8a0d55b68daed3bd774fcbb1e0483cfb"
+  version "0.2.0"
+  resolved "https://github.com/wezard-it/halo-core.git#9bc82d4838f2ef1596b42cb923a1ac57123e145e"
 
 "@xmldom/xmldom@~0.7.0":
   version "0.7.9"
@@ -4259,9 +4259,9 @@ regex-not@^1.0.0, regex-not@^1.0.2:
     safe-regex "^1.1.0"
 
 regexpu-core@^5.3.1:
-  version "5.3.1"
-  resolved "https://registry.yarnpkg.com/regexpu-core/-/regexpu-core-5.3.1.tgz#66900860f88def39a5cb79ebd9490e84f17bcdfb"
-  integrity sha512-nCOzW2V/X15XpLsK2rlgdwrysrBq+AauCn+omItIz4R1pIcmeot5zvjdmOBRLzEH/CkC6IxMJVmxDe3QcMuNVQ==
+  version "5.3.2"
+  resolved "https://registry.yarnpkg.com/regexpu-core/-/regexpu-core-5.3.2.tgz#11a2b06884f3527aec3e93dbbf4a3b958a95546b"
+  integrity sha512-RAM5FlZz+Lhmo7db9L298p2vHP5ZywrVXmVXpmAD9GuL5MPH6t9ROw1iA/wfHkQ76Qe7AaPF0nGuim96/IrQMQ==
   dependencies:
     "@babel/regjsgen" "^0.8.0"
     regenerate "^1.4.2"

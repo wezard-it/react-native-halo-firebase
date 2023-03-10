@@ -535,8 +535,6 @@ export class Room implements IRoom {
       .collection(CollectionName.messages)
       .doc(messageId)
       .update({ deleted: true })
-
-    throw new Error('Method not implemented.')
   }
 
   public fetchRooms(onRoomsUpdate: (rooms: Types.Room[]) => void, onError: (error: Error) => void): void {
