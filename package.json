@@ -58,6 +58,7 @@
     "@react-native-firebase/app": "^17.3.2",
     "@react-native-firebase/auth": "^17.3.2",
     "@react-native-firebase/firestore": "^17.3.2",
+    "@react-native-firebase/storage": "^17.3.2",
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^28.1.2",
     "@types/react": "~17.0.21",
@@ -152,6 +153,7 @@
       "@typescript-eslint/no-shadow": [
         "error"
       ],
+      "@typescript-eslint/no-explicit-any": 0,
       "@typescript-eslint/no-non-null-assertion": 0,
       "@typescript-eslint/no-namespace": 0,
       "@typescript-eslint/no-empty-function": 0,
@@ -233,5 +235,8 @@
         }
       ]
     ]
+  },
+  "dependencies": {
+    "rn-fetch-blob": "^0.12.0"
   }
 }
