@@ -71,3 +71,4 @@ lib/
 
 example/node_modules/
 example/ios/GoogleService-Info.plist
+example/android/app/google-services.json
