@@ -15,6 +15,61 @@ import RNFetchBlob from 'rn-fetch-blob'
 import { CollectionName } from './utils'
 
 export class Room implements IRoom {
+  public async getRooms(next?: string): Promise<{ rooms: Types.RoomDetails[]; next: string; hasNext: boolean }> {
+    const currentFirebaseUser = auth().currentUser
+    if (currentFirebaseUser === null) {
+      throw new Error('[Halo@createRoomWithUsers] Firebase user not authenticated')
+    }
+
+    const nextDoc = firestore().collection(CollectionName.rooms).doc(next)
+
+    const rooms = await firestore()
+      .collection(CollectionName.rooms)
+      .where('usersIds', 'array-contains', currentFirebaseUser.uid)
+      .orderBy('lastMessage.sentAt', 'desc')
+      .startAfter(nextDoc)
+      .limit(10)
+      .get()
+
+    const result: Types.RoomDetails[] = []
+
+    for (const room of rooms.docs) {
+      const { usersIds, removedUsersIds, agentsIds } = room.data() as Types.Room
+      const users = (
+        await firestore()
+          .collection(CollectionName.users)
+          .where('id', 'in', [...usersIds, ...removedUsersIds])
+          .get()
+      ).docs.map((u) => u.data() as Types.UserDetails)
+      const agents =
+        agentsIds !== null && agentsIds.length > 0
+          ? (await firestore().collection(CollectionName.agents).where('id', 'in', agentsIds).get()).docs.map(
+              (u) => u.data() as Types.AgentDetails,
+            )
+          : []
+      result.push({
+        ...(room.data() as Types.Room),
+        users,
+        agents,
+      })
+    }
+
+    const _next = rooms.docs[rooms.size - 1]!.id
+
+    const hasNext =
+      (
+        await firestore()
+          .collection(CollectionName.rooms)
+          .where('usersIds', 'array-contains', currentFirebaseUser.uid)
+          .orderBy('lastMessage.sentAt', 'desc')
+          .startAfter(firestore().collection(CollectionName.rooms).doc(_next))
+          .limit(1)
+          .get()
+      ).size !== 0
+
+    return { rooms: result, next: _next, hasNext }
+  }
+
   public async getRoomDetails(roomId: string): Promise<Types.RoomDetails> {
     const roomDoc = await firestore().collection(CollectionName.rooms).doc(roomId).get()
     if (!roomDoc.exists) {
@@ -44,7 +99,7 @@ export class Room implements IRoom {
     }
   }
 
-  public async createRoomWithUsers(users: string[], name?: string): Promise<Types.RoomDetails> {
+  public async createRoomWithUsers(users: string[], scope = 'PRIVATE', name?: string): Promise<Types.RoomDetails> {
     const currentFirebaseUser = auth().currentUser
     if (currentFirebaseUser === null) {
       throw new Error('[Halo@createRoomWithUsers] Firebase user not authenticated')
@@ -60,12 +115,16 @@ export class Room implements IRoom {
       throw new Error('[Halo@createRoomWithUsers] users array empty')
     }
 
+    if (users.length > 1 && scope === 'PRIVATE') {
+      throw new Error('[Halo@createRoomWithUsers] PRIVATE rooms cannot have more tha two users')
+    }
+
     // if room is private, check if already exists
-    if (users.length === 1) {
+    if (scope === 'PRIVATE') {
       const snapshot = await firestore()
         .collection(CollectionName.rooms)
         .where('scope', '==', 'PRIVATE')
-        .where('users_ids', 'array-contains', currentFirebaseUser.uid)
+        .where('usersIds', 'array-contains', currentFirebaseUser.uid)
         .get()
       const existingRoom = snapshot.docs.find((d) => (d.data() as Types.Room).usersIds.some((uid) => uid === users[0]))
 
@@ -99,7 +158,7 @@ export class Room implements IRoom {
       name: name ?? null,
       usersIds: [creatorData.id, ...users],
       removedUsersIds: [],
-      scope: users.length === 1 ? 'PRIVATE' : 'GROUP',
+      scope: scope as Types.RoomScope,
       metadata: null,
       lastMessage: null,
       agentsIds: null,
@@ -311,7 +370,7 @@ export class Room implements IRoom {
     await firestore().runTransaction(async (transaction) => {
       await transaction.set(messageRef, message)
       await transaction.update(roomRef, {
-        last_message: messagePreview,
+        lastMessage: messagePreview,
       })
     })
 
