@@ -54,7 +54,7 @@ export class Room implements IRoom {
       })
     }
 
-    const _next = rooms.docs[rooms.size - 1]!.id
+    const _next = rooms.docs[rooms.size - 1]?.id ?? ''
 
     const hasNext =
       (

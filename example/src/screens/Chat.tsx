@@ -85,13 +85,14 @@ export const ChatScreen: React.FC<ChatScreenProp> = ({ route, navigation }) => {
         </Pressable>
         <View style={styles.avatarPlaceholder}>
           <Text style={styles.avatarPlaceholderText}>
-            {otherUser?.lastName?.[0]}
-            {otherUser?.firstName?.[0]}
+            {room.scope === 'GROUP'
+              ? room.name?.substring(0, 2)?.toUpperCase()
+              : `${otherUser!.lastName![0]}${otherUser!.firstName![0]}`}
           </Text>
         </View>
         <View style={styles.userInfoContainer}>
           <Text style={styles.headerTitle}>
-            {otherUser?.lastName} {otherUser?.firstName}
+            {room.scope === 'GROUP' ? room.name : `${otherUser!.lastName} ${otherUser!.firstName}`}
           </Text>
         </View>
       </View>

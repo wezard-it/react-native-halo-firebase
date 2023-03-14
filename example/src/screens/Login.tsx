@@ -1,6 +1,7 @@
 import * as React from 'react'
-import { Alert, Button, StyleSheet, TextInput, View } from 'react-native'
+import { Alert, Button, StyleSheet, View } from 'react-native'
 import auth from '@react-native-firebase/auth'
+import { TextInput } from '../components/TextInput'
 import { useLoading } from '../providers/LoadingProvider'
 
 export const LoginScreen: React.FC = () => {

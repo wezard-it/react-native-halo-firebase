@@ -1,15 +1,25 @@
 import * as React from 'react'
-import { Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Button, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import type { StackScreenProps } from '@react-navigation/stack'
 import { halo, Types } from '@wezard/halo-core'
+import { TextInput } from '../components/TextInput'
 import { useAuth } from '../providers/AuthProvider'
 import { useLoading } from '../providers/LoadingProvider'
-import { useNavigation } from '../providers/NavigationProvider'
-export const ContactsScreen: React.FC = () => {
-  const { user: currentUser } = useAuth()
-  const [users, setUsers] = React.useState<Types.UserDetails[]>()
-  const { setIsLoading } = useLoading()
+import { AuthenticatedStackParamList, useNavigation } from '../providers/NavigationProvider'
 
+type ContactsScreenProp = StackScreenProps<AuthenticatedStackParamList, 'Contacts'>
+
+export const ContactsScreen: React.FC<ContactsScreenProp> = ({ route }) => {
+  const { user: currentUser } = useAuth()
+  const { setIsLoading } = useLoading()
   const navigation = useNavigation()
+
+  const { group } = route.params
+
+  const [groupName, setGroupName] = React.useState<string>()
+  const [groupMembers, setGroupMembers] = React.useState<string[]>()
+
+  const [users, setUsers] = React.useState<Types.UserDetails[]>()
 
   React.useEffect(() => {
     halo.fetchUsers(
@@ -50,10 +60,37 @@ export const ContactsScreen: React.FC = () => {
     [setIsLoading, halo],
   )
 
+  const handleCreateGroup = React.useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const room = await halo.createRoomWithUsers(groupMembers!, 'GROUP', groupName!)
+      navigation.replace('Chat', { room })
+    } catch (error) {
+      console.warn(error)
+      Alert.alert('Something went wrong')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [groupMembers, groupName, navigation, setIsLoading])
+
+  const handleSelectMember = React.useCallback((user: Types.UserDetails) => {
+    setGroupMembers((curr) =>
+      curr?.includes(user.id) ? curr.filter((uid) => uid !== user.id) : [...(curr ?? []), user.id],
+    )
+  }, [])
+
+  const canCreateGroup = React.useMemo(() => {
+    return (
+      groupName !== undefined && groupName.trim().length > 3 && groupMembers !== undefined && groupMembers.length > 0
+    )
+  }, [groupMembers, groupName])
+
   const renderUser = React.useCallback(
     ({ item }: { item: Types.UserDetails }) => {
       return (
-        <TouchableOpacity activeOpacity={0.7} onPress={() => handleCreateChat(item)}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => (group ? handleSelectMember(item) : handleCreateChat(item))}>
           <View style={styles.userItem}>
             {item.image ? (
               <Image source={{ uri: item.image }} />
@@ -66,7 +103,7 @@ export const ContactsScreen: React.FC = () => {
               </View>
             )}
             <View style={styles.userInfoContainer}>
-              <Text>
+              <Text style={groupMembers?.includes(item.id) ? styles.selectedUserName : undefined}>
                 {item.lastName} {item.firstName}
               </Text>
             </View>
@@ -74,12 +111,22 @@ export const ContactsScreen: React.FC = () => {
         </TouchableOpacity>
       )
     },
-    [handleCreateChat],
+    [group, groupMembers, handleCreateChat, handleSelectMember],
   )
 
   return (
     <View style={styles.container}>
+      {group ? (
+        <TextInput
+          placeholder="group name"
+          style={styles.groupNameInput}
+          value={groupName}
+          onChangeText={setGroupName}
+          maxLength={25}
+        />
+      ) : null}
       <FlatList data={users} renderItem={renderUser} contentContainerStyle={styles.list} />
+      {group ? <Button onPress={handleCreateGroup} title={'create group'} disabled={!canCreateGroup} /> : null}
     </View>
   )
 }
@@ -115,5 +162,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderBottomColor: '#2d6096',
     borderBottomWidth: 0.5,
+  },
+  groupNameInput: {
+    marginTop: 24,
+  },
+  selectedUserName: {
+    color: '#2d6096',
+    fontWeight: '700',
   },
 })

@@ -1,8 +1,9 @@
 import * as React from 'react'
-import { Alert, Button, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import auth from '@react-native-firebase/auth'
 import { halo, Types } from '@wezard/halo-core'
 import moment from 'moment'
+import { ArrowLeftOnRectangleIcon, ChatBubbleBottomCenterTextIcon, UserGroupIcon } from 'react-native-heroicons/outline'
 import { useAuth } from '../providers/AuthProvider'
 import { useLoading } from '../providers/LoadingProvider'
 import { AuthenticatedStackParamList, useNavigation } from '../providers/NavigationProvider'
@@ -28,7 +29,7 @@ export const HomeScreen: React.FC = () => {
         setNext(res.next)
         setHasNext(res.hasNext)
       } catch (error) {
-        console.warn('error', error)
+        console.warn('error@getRooms', error)
         Alert.alert('Something went wrong!')
       } finally {
         setRefreshing(false)
@@ -55,28 +56,33 @@ export const HomeScreen: React.FC = () => {
 
   const renderRoomItem = React.useCallback(
     ({ item }: { item: Types.RoomDetails }) => {
-      const otherUser = item.users.find((u) => u.id !== user!.id)
+      const otherUser =
+        item.scope === 'GROUP' && item.lastMessage
+          ? item.users.find((u) => u.id === item.lastMessage?.sentBy)
+          : item.users.find((u) => u.id !== user!.id)
       return (
         <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.navigate('Chat', { room: item })}>
           <View style={styles.roomItem}>
             <View style={styles.avatarPlaceholder}>
               <Text style={styles.avatarPlaceholderText}>
-                {otherUser!.lastName![0]}
-                {otherUser!.firstName![0]}
+                {item.scope === 'GROUP'
+                  ? item.name?.substring(0, 2)?.toUpperCase()
+                  : `${otherUser!.lastName![0]}${otherUser!.firstName![0]}`}
               </Text>
             </View>
 
             <View style={styles.userInfoContainer}>
               <Text style={styles.roomName}>
-                {otherUser!.lastName} {otherUser!.firstName}
+                {item.scope === 'GROUP' ? item.name : `${otherUser!.lastName} ${otherUser!.firstName}`}
               </Text>
-              <Text style={styles.roomInfo}>
+              <Text style={styles.roomInfo} numberOfLines={2}>
                 {moment(item.lastMessage!.sentAt).calendar({
                   sameDay: 'HH:mm',
                   lastWeek: 'dddd',
                   sameElse: 'DD/MM/YYYY',
                 })}{' '}
-                {item.lastMessage !== null ? item.lastMessage.text : ''}
+                {item.scope === 'GROUP' && otherUser ? otherUser.firstName : ''}{' '}
+                <Text style={styles.lastMessage}>{item.lastMessage !== null ? item.lastMessage.text : ''}</Text>
               </Text>
             </View>
           </View>
@@ -90,7 +96,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.welcomeTitle}>
-        Benvenuto {user!.firstName} {user!.lastName}
+        Benvenutə {user!.firstName} {user!.lastName}
       </Text>
       <FlatList
         data={rooms}
@@ -99,8 +105,21 @@ export const HomeScreen: React.FC = () => {
         contentContainerStyle={styles.list}
       />
 
-      <Button title="new chat" onPress={() => navigation.navigate('Contacts')} />
-      <Button title="logout" onPress={handleLogout} />
+      <View style={styles.buttonsRow}>
+        <Pressable style={styles.iconButton} onPress={handleLogout}>
+          <ArrowLeftOnRectangleIcon color={'#fff'} />
+        </Pressable>
+        <View style={styles.buttonsRowRightSection}>
+          <Pressable style={styles.iconButton} onPress={() => navigation.navigate('Contacts', { group: false })}>
+            <ChatBubbleBottomCenterTextIcon color={'#fff'} />
+          </Pressable>
+          <Pressable
+            style={[styles.iconButton, styles.groupIconButton]}
+            onPress={() => navigation.navigate('Contacts', { group: true })}>
+            <UserGroupIcon color={'#fff'} />
+          </Pressable>
+        </View>
+      </View>
     </View>
   )
 }
@@ -143,5 +162,24 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   roomName: { fontSize: 22, fontWeight: '500' },
-  roomInfo: { fontSize: 12, fontWeight: '300' },
+  roomInfo: { fontSize: 12, fontWeight: '400' },
+  lastMessage: { fontSize: 12, fontWeight: '300' },
+  iconButton: {
+    height: 40,
+    width: 40,
+    borderRadius: 20,
+    backgroundColor: '#2d6096',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  groupIconButton: {
+    marginLeft: 8,
+  },
+  buttonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  buttonsRowRightSection: {
+    flexDirection: 'row',
+  },
 })

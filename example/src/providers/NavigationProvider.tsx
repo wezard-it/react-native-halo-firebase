@@ -65,7 +65,7 @@ export const NavigationProvider: React.FC = () => {
 
 export type AuthenticatedStackParamList = {
   Home: undefined
-  Contacts: undefined
+  Contacts: { group: boolean }
   Chat: { room: Types.RoomDetails }
 }
 
