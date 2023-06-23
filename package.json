@@ -49,6 +49,7 @@
   },
   "homepage": "https://github.com/wezard-it/react-native-halo-firebase#readme",
   "publishConfig": {
+    "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
