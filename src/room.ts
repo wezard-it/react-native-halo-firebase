@@ -378,7 +378,7 @@ export class Room implements IRoom {
   }
 
   public async sendTextMessage(data: CreateTextMessagePayload): Promise<Types.MessageType.Any> {
-    const { userId, roomId, text, metadata } = data
+    const { userId, roomId, text, metadata, contentType = 'TEXT' } = data
 
     const currentFirebaseUser = auth().currentUser
     if (currentFirebaseUser === null) {
@@ -395,7 +395,7 @@ export class Room implements IRoom {
       createdAt: firestore.Timestamp.now().toDate().toISOString(),
       createdBy: userId,
       updatedAt: firestore.Timestamp.now().toDate().toISOString(),
-      contentType: 'TEXT',
+      contentType: contentType,
       room: roomId,
       delivered: false,
       metadata: metadata || null,
