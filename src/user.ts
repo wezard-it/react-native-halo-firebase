@@ -28,6 +28,7 @@ export class User implements IUser {
       deviceToken: null,
       image: data.image ?? null,
       nickname: data.nickname ?? null,
+      metadata: data.metadata ?? null,
     }
 
     await firestore().collection(CollectionName.users).doc(currentFirebaseUser.uid).set(user)

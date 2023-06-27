@@ -33,6 +33,7 @@ export class Agent implements IAgent {
       createdAt: firestore.Timestamp.now().toDate().toISOString(),
       deviceToken: null,
       tags: data.tags,
+      metadata: data.metadata ?? null,
     }
 
     await firestore().collection(CollectionName.agents).doc(currentFirebaseUser.uid).set(agent)
