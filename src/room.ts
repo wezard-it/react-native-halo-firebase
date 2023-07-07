@@ -35,12 +35,20 @@ export class Room implements IRoom {
 
     for (const room of rooms.docs) {
       const { usersIds, removedUsersIds, agentsIds } = room.data() as Types.Room
-      const users = (
-        await firestore()
-          .collection(CollectionName.users)
-          .where('id', 'in', [...usersIds, ...removedUsersIds])
-          .get()
-      ).docs.map((u) => u.data() as Types.UserDetails)
+      const ids: string[] = [...usersIds, ...removedUsersIds]
+      const users: Types.UserDetails[] = []
+      while (ids.length !== 0) {
+        const batch = ids.splice(0, 10)
+        users.push(
+          ...(
+            await firestore()
+              .collection(CollectionName.users)
+              .where('id', 'in', [...batch])
+              .get()
+          ).docs.map((u) => u.data() as Types.UserDetails),
+        )
+      }
+
       const agents =
         agentsIds !== null && agentsIds.length > 0
           ? (await firestore().collection(CollectionName.agents).where('id', 'in', agentsIds).get()).docs.map(
@@ -78,12 +86,19 @@ export class Room implements IRoom {
 
     const roomData = roomDoc.data() as Types.Room
 
-    const users = (
-      await firestore()
-        .collection(CollectionName.users)
-        .where('id', 'in', [...roomData.usersIds, ...roomData.removedUsersIds])
-        .get()
-    ).docs.map((u) => userToUserDetails(u.data() as Types.User))
+    const ids: string[] = [...roomData.usersIds, ...roomData.removedUsersIds]
+    const users: Types.UserDetails[] = []
+    while (ids.length !== 0) {
+      const batch = ids.splice(0, 10)
+      users.push(
+        ...(
+          await firestore()
+            .collection(CollectionName.users)
+            .where('id', 'in', [...batch])
+            .get()
+        ).docs.map((u) => u.data() as Types.UserDetails),
+      )
+    }
 
     const agents =
       roomData.agentsIds !== null && roomData.agentsIds.length > 0
@@ -131,12 +146,19 @@ export class Room implements IRoom {
       if (existingRoom) {
         const existingRoomData = existingRoom.data() as Types.Room
 
-        const usersDetails = (
-          await firestore()
-            .collection(CollectionName.users)
-            .where('id', 'in', [...existingRoomData.usersIds, ...existingRoomData.removedUsersIds])
-            .get()
-        ).docs.map((u) => userToUserDetails(u.data() as Types.User))
+        const ids: string[] = [...existingRoomData.usersIds, ...existingRoomData.removedUsersIds]
+        const usersDetails: Types.UserDetails[] = []
+        while (ids.length !== 0) {
+          const batch = ids.splice(0, 10)
+          usersDetails.push(
+            ...(
+              await firestore()
+                .collection(CollectionName.users)
+                .where('id', 'in', [...batch])
+                .get()
+            ).docs.map((u) => u.data() as Types.UserDetails),
+          )
+        }
 
         const agentsDetails =
           existingRoomData.agentsIds !== null && existingRoomData.agentsIds.length > 0
@@ -244,12 +266,19 @@ export class Room implements IRoom {
 
     await firestore().collection(CollectionName.rooms).doc(roomId).update({ usersIds, removedUsersIds })
 
-    const users = (
-      await firestore()
-        .collection(CollectionName.users)
-        .where('id', 'in', [...usersIds, ...removedUsersIds])
-        .get()
-    ).docs.map((u) => userToUserDetails(u.data() as Types.User))
+    const ids: string[] = [...usersIds, ...removedUsersIds]
+    const users: Types.UserDetails[] = []
+    while (ids.length !== 0) {
+      const batch = ids.splice(0, 10)
+      users.push(
+        ...(
+          await firestore()
+            .collection(CollectionName.users)
+            .where('id', 'in', [...batch])
+            .get()
+        ).docs.map((u) => u.data() as Types.UserDetails),
+      )
+    }
 
     return {
       ...roomData,
@@ -287,12 +316,19 @@ export class Room implements IRoom {
     const agentsIds = [...(roomData.agentsIds ?? []), agentId]
     await firestore().collection(CollectionName.rooms).doc(roomId).update({ agentsIds })
 
-    const users = (
-      await firestore()
-        .collection(CollectionName.users)
-        .where('id', 'in', [...roomData.usersIds, ...roomData.removedUsersIds])
-        .get()
-    ).docs.map((u) => userToUserDetails(u.data() as Types.User))
+    const ids: string[] = [...roomData.usersIds, ...roomData.removedUsersIds]
+    const users: Types.UserDetails[] = []
+    while (ids.length !== 0) {
+      const batch = ids.splice(0, 10)
+      users.push(
+        ...(
+          await firestore()
+            .collection(CollectionName.users)
+            .where('id', 'in', [...batch])
+            .get()
+        ).docs.map((u) => u.data() as Types.UserDetails),
+      )
+    }
 
     const agents = (await firestore().collection(CollectionName.agents).where('id', 'in', agentsIds).get()).docs.map(
       (u) => agentToAgentDetails(u.data() as Types.Agent),
@@ -335,12 +371,19 @@ export class Room implements IRoom {
 
     await firestore().collection(CollectionName.rooms).doc(roomId).update({ usersIds, removedUsersIds })
 
-    const users = (
-      await firestore()
-        .collection(CollectionName.users)
-        .where('id', 'in', [...usersIds, ...removedUsersIds])
-        .get()
-    ).docs.map((u) => userToUserDetails(u.data() as Types.User))
+    const ids: string[] = [...usersIds, ...removedUsersIds]
+    const users: Types.UserDetails[] = []
+    while (ids.length !== 0) {
+      const batch = ids.splice(0, 10)
+      users.push(
+        ...(
+          await firestore()
+            .collection(CollectionName.users)
+            .where('id', 'in', [...batch])
+            .get()
+        ).docs.map((u) => u.data() as Types.UserDetails),
+      )
+    }
 
     return {
       ...roomData,
