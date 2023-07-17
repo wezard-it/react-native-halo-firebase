@@ -173,16 +173,23 @@ export class Room implements IRoom {
 
     const doc = firestore().collection(CollectionName.rooms).doc()
 
+    const createdAt = firestore.Timestamp.now().toDate().toISOString()
     const room: Types.Room = {
       id: doc.id,
       createdBy: creatorData.id,
-      createdAt: firestore.Timestamp.now().toDate().toISOString(),
+      createdAt: createdAt,
       name: name ?? null,
       usersIds: [creatorData.id, ...users],
       removedUsersIds: [],
       scope: scope as Types.RoomScope,
       metadata: null,
-      lastMessage: null,
+      lastMessage: {
+        id: null,
+        sentAt: createdAt,
+        sentBy: null,
+        text: null,
+        type: null,
+      },
       agentsIds: null,
       tag: null,
     }
@@ -214,12 +221,19 @@ export class Room implements IRoom {
 
     const doc = firestore().collection(CollectionName.rooms).doc()
 
+    const createdAt = firestore.Timestamp.now().toDate().toISOString()
     const room: Types.Room = {
       id: doc.id,
-      createdAt: firestore.Timestamp.now().toDate().toISOString(),
+      createdAt,
       agentsIds: [],
       createdBy: creatorData.id,
-      lastMessage: null,
+      lastMessage: {
+        id: null,
+        sentAt: createdAt,
+        sentBy: null,
+        text: null,
+        type: null,
+      },
       metadata: null,
       name: null,
       removedUsersIds: [],
