@@ -6,10 +6,12 @@ import {
   agentToAgentDetails,
   CreateFileMessageFromUrlPayload,
   CreateFileMessagePayload,
+  CreateSurveyMessagePayload,
   CreateTextMessagePayload,
   IRoom,
   Types,
   userToUserDetails,
+  UpdateSurveyPayload,
 } from '@wezard/halo-core'
 import RNFetchBlob from 'rn-fetch-blob'
 import { CollectionName } from './utils'
@@ -560,6 +562,67 @@ export class Room implements IRoom {
         name: file.filename,
         uri: file.url,
       },
+    }
+
+    return await this.finalizeSendMessage(roomId, message)
+  }
+
+  public async sendSurveyMessage(data: CreateSurveyMessagePayload): Promise<Types.MessageType.Any> {
+    const { userId, roomId, survey, metadata } = data
+
+    const currentFirebaseUser = auth().currentUser
+    if (currentFirebaseUser === null) {
+      throw new Error('[Halo@sendSurveyMessage] Firebase user not authenticated')
+    }
+
+    const room = await firestore().collection(CollectionName.rooms).doc(roomId).get()
+    if (!room.exists) {
+      throw new Error('[Halo@sendSurveyMessage] room not found')
+    }
+
+    // TODO: foreach element inside survey?.votes create a document {id: firebaseGenerated; title: string}
+
+    const message = {
+      createdAt: firestore.Timestamp.now().toDate().toISOString(),
+      createdBy: userId,
+      updatedAt: firestore.Timestamp.now().toDate().toISOString(),
+      contentType: 'SURVEY',
+      room: roomId,
+      delivered: false,
+      metadata: metadata || null,
+      readBy: [],
+      survey,
+    }
+
+    return await this.finalizeSendMessage(roomId, message)
+  }
+
+  // TODO: init updateSurvey
+  public async updateSurvey(data: UpdateSurveyPayload): Promise<Types.MessageType.Any> {
+    const { userId, roomId } = data
+
+    const currentFirebaseUser = auth().currentUser
+    if (currentFirebaseUser === null) {
+      throw new Error('[Halo@sendSurveyMessage] Firebase user not authenticated')
+    }
+
+    const room = await firestore().collection(CollectionName.rooms).doc(roomId).get()
+    if (!room.exists) {
+      throw new Error('[Halo@sendSurveyMessage] room not found')
+    }
+
+    // TODO: foreach element inside survey?.votes create a document {id: firebaseGenerated; title: string}
+
+    const message = {
+      createdAt: firestore.Timestamp.now().toDate().toISOString(),
+      createdBy: userId,
+      updatedAt: firestore.Timestamp.now().toDate().toISOString(),
+      contentType: 'SURVEY',
+      room: roomId,
+      delivered: false,
+      // metadata: metadata || null,
+      readBy: [],
+      // survey,
     }
 
     return await this.finalizeSendMessage(roomId, message)
