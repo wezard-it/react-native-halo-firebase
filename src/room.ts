@@ -580,7 +580,11 @@ export class Room implements IRoom {
       throw new Error('[Halo@sendSurveyMessage] room not found')
     }
 
-    // TODO: foreach element inside survey?.votes create a document {id: firebaseGenerated; title: string}
+    const options: { id: string; title: string; votes: string[] }[] = []
+
+    survey.options.forEach((element, index) => {
+      options.push({ id: `${index}`, title: element, votes: [] })
+    })
 
     const message = {
       createdAt: firestore.Timestamp.now().toDate().toISOString(),
@@ -591,7 +595,11 @@ export class Room implements IRoom {
       delivered: false,
       metadata: metadata || null,
       readBy: [],
-      survey,
+      survey: {
+        ...survey,
+        participants: [],
+        options,
+      },
     }
 
     return await this.finalizeSendMessage(roomId, message)
