@@ -2492,10 +2492,10 @@
     "@typescript-eslint/types" "5.54.1"
     eslint-visitor-keys "^3.3.0"
 
-"@wezard/halo-core@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@wezard/halo-core/-/halo-core-0.9.0.tgz#b79e76959389d487dfbb42c791f545680b8cae04"
-  integrity sha512-3gYuZUXZvAecCi/InpSM42iTTLKp7NjKarfyqn9Z+4AhU3ExzZxC2+VtkelrDMsirkH/QdkWaby+n3+WP56few==
+"@wezard/halo-core@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@wezard/halo-core/-/halo-core-0.10.0.tgz#dc52af846ceb6fac03eb9251858988ece14e4ddc"
+  integrity sha512-pBYm/t1I6zhLXIVQqIZBetHrOAyrONffowJQWW24xVg+dItmL57YSAFu0RHYiwk5Auedn+H8yIIjcJ6a5mvQpQ==
 
 "@xmldom/xmldom@~0.7.0":
   version "0.7.9"

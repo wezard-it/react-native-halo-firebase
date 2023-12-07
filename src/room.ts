@@ -602,8 +602,8 @@ export class Room implements IRoom {
   }
 
   // TODO: init updateSurvey
-  public async updateSurvey(data: UpdateSurveyPayload): Promise<Types.MessageType.Any> {
-    const { userId, roomId } = data
+  public async updateSurvey(data: UpdateSurveyPayload): Promise<void> {
+    const { roomId, messageId, survey } = data
 
     const currentFirebaseUser = auth().currentUser
     if (currentFirebaseUser === null) {
@@ -615,21 +615,25 @@ export class Room implements IRoom {
       throw new Error('[Halo@sendSurveyMessage] room not found')
     }
 
-    // TODO: foreach element inside survey?.votes create a document {id: firebaseGenerated; title: string}
+    // 1) get message by
+    const message = await firestore()
+      .collection(CollectionName.rooms)
+      .doc(roomId)
+      .collection(CollectionName.messages)
+      .doc(messageId)
+      .get()
 
-    const message = {
-      createdAt: firestore.Timestamp.now().toDate().toISOString(),
-      createdBy: userId,
-      updatedAt: firestore.Timestamp.now().toDate().toISOString(),
-      contentType: 'SURVEY',
-      room: roomId,
-      delivered: false,
-      // metadata: metadata || null,
-      readBy: [],
-      // survey,
+    if (!message.exists) {
+      throw new Error('[Halo@deleteMessage] message not found')
     }
 
-    return await this.finalizeSendMessage(roomId, message)
+    // 2) update data
+    await firestore()
+      .collection(CollectionName.rooms)
+      .doc(roomId)
+      .collection(CollectionName.messages)
+      .doc(messageId)
+      .update({ survey })
   }
 
   public async getRoomMedia(
