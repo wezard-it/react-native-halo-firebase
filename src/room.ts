@@ -595,11 +595,7 @@ export class Room implements IRoom {
       delivered: false,
       metadata: metadata || null,
       readBy: [],
-      survey: {
-        ...survey,
-        participants: [],
-        options,
-      },
+      survey: { ...survey, options },
     }
 
     return await this.finalizeSendMessage(roomId, message)
