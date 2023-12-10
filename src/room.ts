@@ -437,7 +437,7 @@ export class Room implements IRoom {
   }
 
   public async sendTextMessage(data: CreateTextMessagePayload): Promise<Types.MessageType.Any> {
-    const { userId, roomId, text, metadata, contentType = 'TEXT' } = data
+    const { userId, roomId, text, metadata, contentType = 'TEXT', mentions } = data
 
     const currentFirebaseUser = auth().currentUser
     if (currentFirebaseUser === null) {
@@ -459,13 +459,14 @@ export class Room implements IRoom {
       delivered: false,
       metadata: metadata || null,
       readBy: [],
+      mentions,
     }
 
     return await this.finalizeSendMessage(roomId, message)
   }
 
   public async sendFileMessage(data: CreateFileMessagePayload): Promise<Types.MessageType.Any> {
-    const { userId, roomId, file, text, metadata } = data
+    const { userId, roomId, file, text, metadata, mentions } = data
 
     const currentFirebaseUser = auth().currentUser
     if (currentFirebaseUser === null) {
@@ -520,13 +521,14 @@ export class Room implements IRoom {
         name: file.filename,
         uri: await attachmentRef.getDownloadURL(),
       },
+      mentions,
     }
 
     return await this.finalizeSendMessage(roomId, message)
   }
 
   public async sendFileMessageFromUrl(data: CreateFileMessageFromUrlPayload): Promise<Types.MessageType.Any> {
-    const { userId, roomId, file, text, metadata } = data
+    const { userId, roomId, file, text, metadata, mentions } = data
 
     const currentFirebaseUser = auth().currentUser
     if (currentFirebaseUser === null) {
@@ -562,6 +564,7 @@ export class Room implements IRoom {
         name: file.filename,
         uri: file.url,
       },
+      mentions,
     }
 
     return await this.finalizeSendMessage(roomId, message)
