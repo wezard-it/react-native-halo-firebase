@@ -601,7 +601,6 @@ export class Room implements IRoom {
     return await this.finalizeSendMessage(roomId, message)
   }
 
-  // TODO: init updateSurvey
   public async updateSurvey(data: UpdateSurveyPayload): Promise<void> {
     const { roomId, messageId, survey } = data
 
