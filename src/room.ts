@@ -6,10 +6,12 @@ import {
   agentToAgentDetails,
   CreateFileMessageFromUrlPayload,
   CreateFileMessagePayload,
+  CreateSurveyMessagePayload,
   CreateTextMessagePayload,
   IRoom,
   Types,
   userToUserDetails,
+  UpdateSurveyPayload,
 } from '@wezard/halo-core'
 import RNFetchBlob from 'rn-fetch-blob'
 import { CollectionName } from './utils'
@@ -435,7 +437,7 @@ export class Room implements IRoom {
   }
 
   public async sendTextMessage(data: CreateTextMessagePayload): Promise<Types.MessageType.Any> {
-    const { userId, roomId, text, metadata, contentType = 'TEXT' } = data
+    const { userId, roomId, text, metadata, contentType = 'TEXT', mentions } = data
 
     const currentFirebaseUser = auth().currentUser
     if (currentFirebaseUser === null) {
@@ -457,13 +459,14 @@ export class Room implements IRoom {
       delivered: false,
       metadata: metadata || null,
       readBy: [],
+      mentions,
     }
 
     return await this.finalizeSendMessage(roomId, message)
   }
 
   public async sendFileMessage(data: CreateFileMessagePayload): Promise<Types.MessageType.Any> {
-    const { userId, roomId, file, text, metadata } = data
+    const { userId, roomId, file, text, metadata, mentions } = data
 
     const currentFirebaseUser = auth().currentUser
     if (currentFirebaseUser === null) {
@@ -518,13 +521,14 @@ export class Room implements IRoom {
         name: file.filename,
         uri: await attachmentRef.getDownloadURL(),
       },
+      mentions,
     }
 
     return await this.finalizeSendMessage(roomId, message)
   }
 
   public async sendFileMessageFromUrl(data: CreateFileMessageFromUrlPayload): Promise<Types.MessageType.Any> {
-    const { userId, roomId, file, text, metadata } = data
+    const { userId, roomId, file, text, metadata, mentions } = data
 
     const currentFirebaseUser = auth().currentUser
     if (currentFirebaseUser === null) {
@@ -560,9 +564,78 @@ export class Room implements IRoom {
         name: file.filename,
         uri: file.url,
       },
+      mentions,
     }
 
     return await this.finalizeSendMessage(roomId, message)
+  }
+
+  public async sendSurveyMessage(data: CreateSurveyMessagePayload): Promise<Types.MessageType.Any> {
+    const { userId, roomId, survey, metadata } = data
+
+    const currentFirebaseUser = auth().currentUser
+    if (currentFirebaseUser === null) {
+      throw new Error('[Halo@sendSurveyMessage] Firebase user not authenticated')
+    }
+
+    const room = await firestore().collection(CollectionName.rooms).doc(roomId).get()
+    if (!room.exists) {
+      throw new Error('[Halo@sendSurveyMessage] room not found')
+    }
+
+    const options: { id: string; title: string; votes: string[] }[] = []
+
+    survey.options.forEach((element, index) => {
+      options.push({ id: `${index}`, title: element, votes: [] })
+    })
+
+    const message = {
+      createdAt: firestore.Timestamp.now().toDate().toISOString(),
+      createdBy: userId,
+      updatedAt: firestore.Timestamp.now().toDate().toISOString(),
+      contentType: 'SURVEY',
+      room: roomId,
+      delivered: false,
+      metadata: metadata || null,
+      readBy: [],
+      survey: { ...survey, options },
+    }
+
+    return await this.finalizeSendMessage(roomId, message)
+  }
+
+  public async updateSurvey(data: UpdateSurveyPayload): Promise<void> {
+    const { roomId, messageId, survey } = data
+
+    const currentFirebaseUser = auth().currentUser
+    if (currentFirebaseUser === null) {
+      throw new Error('[Halo@sendSurveyMessage] Firebase user not authenticated')
+    }
+
+    const room = await firestore().collection(CollectionName.rooms).doc(roomId).get()
+    if (!room.exists) {
+      throw new Error('[Halo@sendSurveyMessage] room not found')
+    }
+
+    // 1) get message by
+    const message = await firestore()
+      .collection(CollectionName.rooms)
+      .doc(roomId)
+      .collection(CollectionName.messages)
+      .doc(messageId)
+      .get()
+
+    if (!message.exists) {
+      throw new Error('[Halo@deleteMessage] message not found')
+    }
+
+    // 2) update data
+    await firestore()
+      .collection(CollectionName.rooms)
+      .doc(roomId)
+      .collection(CollectionName.messages)
+      .doc(messageId)
+      .update({ survey })
   }
 
   public async getRoomMedia(
