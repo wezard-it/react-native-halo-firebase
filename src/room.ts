@@ -30,7 +30,7 @@ export class Room implements IRoom {
       .where('usersIds', 'array-contains', currentFirebaseUser.uid)
       .orderBy('lastMessage.sentAt', 'desc')
       .startAfter(nextDoc)
-      .limit(20)
+      .limit(10)
       .get()
 
     const result: Types.RoomDetails[] = []
@@ -40,7 +40,7 @@ export class Room implements IRoom {
       const ids: string[] = [...usersIds, ...removedUsersIds]
       const users: Types.UserDetails[] = []
       while (ids.length !== 0) {
-        const batch = ids.splice(0, 20)
+        const batch = ids.splice(0, 10)
         users.push(
           ...(
             await firestore()
